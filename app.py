@@ -40,16 +40,16 @@ def contain(orders, words):
 
 def check_and_see(warehouse, date):
     sub_orders = orders[(orders["delivered_date"]==date) & (orders["from_warehouse"]==warehouse)]
-    st.write(f"**{len(sub_orders)} commandes** le jour {date[:10]}")
+    st.sidebar.write(f"**{len(sub_orders)} commandes** le jour {date[:10]}")
 
     sub_routes = routes[routes["orders"].apply(contain, words=sub_orders["order_id"])]
-    st.write(f"**{len(sub_routes)} routes** le jour {date[:10]}")
+    st.sidebar.write(f"**{len(sub_routes)} routes** le jour {date[:10]}")
     
     sub_routes.loc[:,"path"] = sub_routes["stops"].apply(create_path)
 
     sub_routes.loc[:, "fill_rate"] = sub_routes.loc[:, "fill_volume"] / 81.25
 
-    st.write(f"Taux de remplissage moyen sur tous les trajets : **{sub_routes.loc[:, 'fill_rate'].mean()*100:.0f}%**")
+    st.sidebar.write(f"Taux de remplissage moyen sur tous les trajets : **{sub_routes.loc[:, 'fill_rate'].mean()*100:.0f}%**")
 
     for k in range(len(sub_routes)):
         st.subheader(f"Route {k + 1}")
@@ -65,17 +65,17 @@ def check_and_see(warehouse, date):
         gdf_cities.to_crs(epsg=3857).plot(ax=ax, column="order_total_volume", markersize=200)#, legend=True)
 
         gdf = gpd.GeoDataFrame(s_df, geometry=s_df.path, crs=4326)
-        gdf.to_crs(epsg=3857).plot(ax=ax, column="n_units")
+        gdf.to_crs(epsg=3857).plot(ax=ax, column="n_units", linewidth=3)
 
-        cx.add_basemap(ax, source=cx.providers.CartoDB.Voyager, zoom=7)
+        cx.add_basemap(ax, source=cx.providers.CartoDB.Voyager)#, zoom=7)
         ax.axis('off')
         ax.set_title("Localisation des villes")
         st.pyplot(fig)
 
 # Defining variables
 
-warehouse = st.selectbox("Choisir un entrepôt", options=warehouses.warehouse_city.tolist())
-date = st.selectbox("Choisir une date de livraison", options=orders.delivered_date.unique().tolist())
+warehouse = st.sidebar.selectbox("Choisir un entrepôt", options=warehouses.warehouse_city.tolist())
+date = st.sidebar.selectbox("Choisir une date de livraison", options=orders.delivered_date.unique().tolist())
 
 # Running app
 
